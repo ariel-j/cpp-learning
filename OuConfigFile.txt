@@ -1,0 +1,99 @@
+# Customers - customer <customer_name> <customer_type> <customer_distance> <max_orders>
+
+customer Moshe soldier 3 1             
+customer Matan soldier 3 2 
+customer Ariel soldier 4 3 
+customer Adi soldier 1 4
+customer Alon soldier 2 5 
+customer Yuval soldier 5 6 
+customer Tamar soldier 1 7 
+customer Yonatan soldier 2 8 
+customer Bateya soldier 5 1 
+customer Michal soldier 3 0 
+customer Naama soldier 3 10 
+customer Efrat soldier 2 20 
+customer Dana soldier 9 6 
+customer Shugel soldier 11 6 
+customer Afek soldier 100 6 
+customer Renana civilian 12 6               
+customer Ron civilian 2 3  
+customer Tali civilian 2 8  
+customer Talyia civilian 5 11  
+customer Yaira civilian 4 12  
+customer Ramon civilian 3 13  
+customer Alex civilian 2 14  
+customer Yam civilian 2 7  
+customer Liam civilian 2 6  
+customer Liv civilian 3 3  
+customer Noam civilian 4 1  
+customer Gal civilian 6 1  
+customer Roni civilian 0 6  
+customer Gadi civilian 20 10  
+customer Rachel civilian 12 100  
+customer Ben civilian 22 12  
+customer Tamir civilian 12 6  
+customer Shon civilian 4 4  
+customer Tim civilian 21 2  
+customer Anael civilian 21 11  
+customer Avram civilian 21 1  
+customer Yossi civilian 2 1  
+
+# Volunteers - volunteer <volunteer_name> <volunteer_role> <volunteer_coolDown>/<volunteer_maxDistance> <distance_per_step>(for drivers only) <volunteer_maxOrders>(optional)
+
+volunteer Tamar collector 2             
+volunteer Roni collector 1
+volunteer Alon collector 1
+volunteer Ariel collector 1
+volunteer Tamara collector 0
+volunteer Tamary collector 20
+volunteer Tamarui collector 21
+volunteer Tal collector 1
+volunteer Tomas collector 3
+volunteer Tom collector 4
+volunteer Tamara collector 2
+volunteer Tamir collector 2
+
+# Example of a limited collector, coolDown=3, maxOrders=2
+
+volunteer Ron limited_collector 3 2     
+volunteer Tamar collector 2             
+volunteer Roni collector 1
+volunteer Alon collector 1
+volunteer Ariel collector 1
+volunteer Tamara collector 0
+volunteer Tamary collector 20
+volunteer Tamarui collector 21
+volunteer Tal collector 1
+volunteer Tomas collector 3
+volunteer Tom collector 4
+volunteer Tamara collector 2
+volunteer Tamir collector 2
+
+# Example of a driver, maxDistance=7, distance_per_step=4, maxOrders is unlimited
+
+volunteer Tal driver 7 7                
+volunteer Tai driver 70 40 
+volunteer Talia driver 7 5 
+volunteer Talusha driver 7 3 
+volunteer Yuval driver 4 1 
+volunteer Moshe driver 3 0 
+volunteer Ariel driver 7 6 
+volunteer Gal driver 7 6 
+volunteer Liv driver 7 1 
+volunteer Liam driver 7 2 
+volunteer Din driver 70 44 
+
+# Example of a limited driver, maxDistance=3, distance_per_step=2, maxOrders=3
+
+volunteer Din limited_driver 3 2 3      
+volunteer Dina limited_driver 3 22 31
+volunteer TAl limited_driver 30 1 13
+volunteer Din limited_driver 12 0 1
+volunteer Dino limited_driver 1 11 0
+volunteer Diny limited_driver 2 4 4
+volunteer Dini limited_driver 33 5 5
+volunteer Din limited_driver 1 6 6
+volunteer Dana limited_driver 6 7 8
+volunteer Alecsai limited_driver 9 2 3
+volunteer Alon limited_driver 0 20 3
+volunteer Elon limited_driver 3 2 3
