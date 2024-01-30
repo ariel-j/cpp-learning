@@ -51,5 +51,9 @@ class WareHouse {
         int customerCounter; //For assigning unique customer IDs
         int volunteerCounter; //For assigning unique volunteer IDs
         int orderCounter;
-        const string& file; 
+        const string& file;
+        Volunteer* fake_volunteer;
+        Customer* fake_Customer;
+        Order* fake_Order;
+
 };

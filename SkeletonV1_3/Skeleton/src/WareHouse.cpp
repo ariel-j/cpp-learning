@@ -7,7 +7,8 @@ using namespace std;
 
 
 WareHouse::WareHouse(const string &configFilePath)
-:  isOpen(false), customerCounter(-1), volunteerCounter(-1),orderCounter(-1), file(configFilePath)  {Initiatefile();}
+:  isOpen(false), customerCounter(-1), volunteerCounter(-1),orderCounter(-1), file(configFilePath), 
+fake_Customer(new CivilianCustomer(-1,"-1",-1,-1)), fake_Order(new Order(-1,-1,-1)), fake_volunteer(new CollectorVolunteer(-1, "-1",-1))  {Initiatefile();}
 
 void WareHouse::Initiatefile(){
     string line;
@@ -54,7 +55,6 @@ void WareHouse::Initiatefile(){
 
 }
 
-
 void WareHouse::start(){
     open();
     cout << "Warehouse is open!" << endl;
@@ -65,12 +65,34 @@ void WareHouse::start(){
 }
 
 void WareHouse::addOrder(Order* order){
-        pendingOrders.push_back(order);
+    pendingOrders.push_back(order);
+}
+
+void WareHouse::addAction(BaseAction* action){
+    actionsLog.push_back(action);
 }
 
 void WareHouse::addCustomer(Customer* customer){
     customers.push_back(customer);
 }
+
+Customer& WareHouse::getCustomer(int customerId) const {
+    for(Customer* c: customers) {
+        if(c->getId() == customerId) {
+            return *c;
+        }
+    }
+    return *fake_Customer;
+}
+
+Volunteer& WareHouse::getVolunteer(int volunteerId) const{
+    for(Volunteer* v:volunteers){
+        if(v->getId() == volunteerId){ return *v;}}
+    return *fake_volunteer;
+}
+
+
+
 
 int WareHouse::getNewcustomerID() {
     customerCounter++;
@@ -112,6 +134,8 @@ void WareHouse::operator=(const WareHouse &other){
     }
 
 }
+
+
 
 
 int main(int argc, char** argv) {
