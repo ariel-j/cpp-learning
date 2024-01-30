@@ -61,7 +61,7 @@ CivilianCustomer::CivilianCustomer(int id, const string &name, int locationDista
  Customer(id,name,locationDistance,maxOrders)
  {}
 
- CivilianCustomer* CivilianCustomer::clone() const{
+CivilianCustomer* CivilianCustomer::clone() const{
     return new CivilianCustomer(*this);
 }
 /*

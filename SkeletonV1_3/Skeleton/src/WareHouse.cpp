@@ -5,12 +5,57 @@
 using namespace std;
 #include <sstream>
 
-
 WareHouse::WareHouse(const string &configFilePath)
-:  isOpen(false), customerCounter(-1), volunteerCounter(-1),orderCounter(-1), file(configFilePath), 
-fake_Customer(new CivilianCustomer(-1,"-1",-1,-1)), fake_Order(new Order(-1,-1,-1)), fake_volunteer(new CollectorVolunteer(-1, "-1",-1))  {Initiatefile();}
+:  isOpen(false), customerCounter(-1), volunteerCounter(-1),orderCounter(-1), 
+fake_Customer(new CivilianCustomer(-1,"-1",-1,-1)), fake_Order(new Order(-1,-1,-1)), fake_volunteer(new CollectorVolunteer(-1,"-1",-1))
+{Initiatefile(configFilePath);}
 
-void WareHouse::Initiatefile(){
+//copy constarctor
+WareHouse::WareHouse(const WareHouse& other)
+: isOpen(other.isOpen), customerCounter(other.customerCounter), volunteerCounter(other.volunteerCounter), orderCounter(other.orderCounter),
+fake_Customer(other.fake_Customer->clone()), fake_Order(other.fake_Order->clone()), fake_volunteer(other.fake_volunteer->clone()) {
+    // Copy action log
+    for(BaseAction* act: other.actionsLog) {
+        actionsLog.push_back(act->clone());
+    }
+    // Copy volunteers
+    for(Volunteer* vol: other.volunteers) {
+        volunteers.push_back(vol->clone());
+    }
+    // Copy pending orders
+    for(Order* order: other.pendingOrders) {
+        pendingOrders.push_back(order->clone());
+    }
+    // Copy inProcess orders
+    for(Order* order: other.inProcessOrders) {
+        inProcessOrders.push_back(order->clone());
+    }
+    // Copy completed orders
+    for(Order* order: other.completedOrders) {
+        completedOrders.push_back(order->clone());
+    }
+    // Copy customers
+    for(Customer* customer: other.customers) {
+        customers.push_back(customer->clone());
+    }
+}
+ //move constarctor
+WareHouse::WareHouse(const WareHouse&& other) noexcept : 
+isOpen(other.isOpen), customerCounter(other.customerCounter), volunteerCounter(other.volunteerCounter), orderCounter(other.orderCounter),
+fake_Customer(other.fake_Customer), fake_Order(other.fake_Order), fake_volunteer(other.fake_volunteer),actionsLog (other.actionsLog),volunteers(other.volunteers),
+pendingOrders(other.pendingOrders), inProcessOrders(other.inProcessOrders), completedOrders(other.completedOrders), customers(other.customers) {
+    actionsLog.clear();
+    volunteers.clear();
+    pendingOrders.clear();
+    inProcessOrders.clear();
+    completedOrders.clear(); 
+    customers.clear();
+    fake_volunteer = nullptr;
+    fake_Customer  = nullptr;
+    fake_Order = nullptr;
+}
+
+void WareHouse::Initiatefile(string file){
     string line;
     vector<string> words;
     string word;
@@ -51,8 +96,6 @@ void WareHouse::Initiatefile(){
         }
     }
     MyReadFile.close();
-
-
 }
 
 void WareHouse::start(){
@@ -91,8 +134,24 @@ Volunteer& WareHouse::getVolunteer(int volunteerId) const{
     return *fake_volunteer;
 }
 
+Order& WareHouse::getOrder(int orderId) const{
+    for(Order* o:pendingOrders){
+        if(o->getId() == orderId){ return *o;}}
+    for(Order* o:inProcessOrders){
+        if(o->getId() == orderId){ return *o;}}
+    for(Order* o:completedOrders){
+        if(o->getId() == orderId){ return *o;}}
+    return *fake_Order;
+}
 
-
+const vector<BaseAction*>& WareHouse::getActions() const {
+    return actionsLog;
+}
+// Changes isOpen status and exit the loop and finishes the program(free all memory as well)
+void WareHouse::close() {
+    isOpen=false;
+    delete this;
+}
 
 int WareHouse::getNewcustomerID() {
     customerCounter++;
@@ -128,15 +187,137 @@ vector<Volunteer*>& WareHouse::getVolunteers(){
     return volunteers;
 }
 
-void WareHouse::operator=(const WareHouse &other){
-    if(&other != this) {
-        
-    }
-
+int WareHouse::getOrderCounter(){
+    return orderCounter;
 }
 
 
+// Copy assingment
+void WareHouse::operator=(const WareHouse &other){
+    if(&other != this) {
+        isOpen = other.isOpen;
+        customerCounter = other.customerCounter;
+        volunteerCounter = other.volunteerCounter;
+        orderCounter = other.orderCounter;
+        fake_volunteer = other.fake_volunteer->clone();
+        fake_Customer = other.fake_Customer->clone();
+        fake_Order = other.fake_Order->clone();
+        // Clear action log
+        for(BaseAction* a:actionsLog){delete(a);}
+        actionsLog.clear();
+        // Copy action log
+        for(BaseAction* act: other.actionsLog) {
+            actionsLog.push_back(act->clone());
+        }
+        // Copy volunteers
+        for(Volunteer* v:volunteers){delete(v);}
+        volunteers.clear();
+        for(Volunteer* vol: other.volunteers) {
+            volunteers.push_back(vol->clone());
+        }
+        // Copy pending orders
+        for(Order* o:pendingOrders){delete(o);}
+        pendingOrders.clear();
+        for(Order* order: other.pendingOrders) {
+            pendingOrders.push_back(order->clone());
+        }
+        // Copy inProcess orders
+        for(Order* o:inProcessOrders){delete(o);}
+        inProcessOrders.clear();
+        for(Order* order: other.inProcessOrders) {
+            inProcessOrders.push_back(order->clone());
+        }
+        // Copy completed orders
+        for(Order* o:completedOrders){delete(o);}
+        completedOrders.clear(); 
+        for(Order* order: other.completedOrders) {
+            completedOrders.push_back(order->clone());
+        }
+        // Copy customers
+        for(Customer* c:customers){delete(c);}
+        customers.clear();
+        for(Customer* customer: other.customers) {
+            customers.push_back(customer->clone());
+        }
+        
+       
+    }
 
+}
+//move assigment
+WareHouse& WareHouse::operator=(WareHouse&& other) noexcept {
+    if(&other != this) {
+        // Primitive varibles
+        isOpen = other.isOpen;
+        customerCounter = other.customerCounter;
+        volunteerCounter = other.volunteerCounter;
+        orderCounter = other.orderCounter;
+
+        // Objects
+        delete fake_volunteer;
+        delete fake_Customer;
+        delete fake_Order;
+        fake_volunteer = other.fake_volunteer;
+        fake_Customer = other.fake_Customer;
+        fake_Order = other.fake_Order;
+        other.fake_volunteer = nullptr;
+        other.fake_Customer = nullptr;
+        other.fake_Order = nullptr;
+
+        // Vectors
+        for(BaseAction* a:actionsLog){delete(a);} // Delete myself
+        actionsLog.clear(); // Clear myself
+        actionsLog = other.actionsLog; // Assingment
+        other.actionsLog.clear(); //nullptr the other
+
+        for(Order* o:pendingOrders){delete(o);} 
+        pendingOrders.clear();
+        pendingOrders = other.pendingOrders;
+        other.pendingOrders.clear();
+
+        for(Order* o:inProcessOrders){delete(o);} // Delete myself
+        inProcessOrders.clear();// Clear myself
+        inProcessOrders = other.inProcessOrders;// Assingment
+        other.inProcessOrders.clear(); //nullptr the other
+
+        for(Order* o:completedOrders){delete(o);}
+        completedOrders.clear();
+        completedOrders = other.completedOrders;
+        other.completedOrders.clear();
+        
+        for(Volunteer* v:volunteers){delete(v);} // Delete myself
+        volunteers.clear();// Clear myself
+        volunteers = other.volunteers;// Assingment
+        other.volunteers.clear(); //nullptr the other
+        
+        for(Customer* c:customers){delete(c);} // Delete myself
+        customers.clear();// Clear myself
+        customers = other.customers;// Assingment
+        other.customers.clear(); //nullptr the other            
+    }
+} 
+
+WareHouse::~WareHouse() {
+    for(Order* o:pendingOrders) {
+        if(o != nullptr) {delete(o);}} 
+
+    for(Order* o:inProcessOrders){
+        if(o != nullptr) {delete(o);}} 
+
+    for(Order* o:completedOrders){
+        if(o != nullptr) {delete(o);}} 
+
+    for(Volunteer* v:volunteers){
+        if(v != nullptr) {delete(v);}} 
+
+    for(Customer* c:customers){
+        if(c != nullptr) {delete(c);}} 
+
+    for(BaseAction* a:actionsLog){
+        if(a != nullptr) {delete(a);}} 
+    // Default delete     
+    delete(this);   
+}
 
 int main(int argc, char** argv) {
     cout << "Entering main:" << endl;
@@ -146,13 +327,3 @@ int main(int argc, char** argv) {
     wareHouse.start();
     return 0;
 }
-
-
-
-/*
-    for (Volunteer* v : volunteers) {
-        cout << (*v).toString() << endl;
-    }
-    for (Customer* c : customers) {
-        cout << (*c).toString() << endl;
-    }*/

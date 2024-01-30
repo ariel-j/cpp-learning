@@ -13,7 +13,9 @@ class Volunteer;
 class WareHouse {
 
     public:
-        WareHouse(const string &configFilePath);
+        WareHouse(const string &configFilePath); 
+        WareHouse(const WareHouse& other); //copy constarctor
+        WareHouse(const WareHouse&& other) noexcept; //move constarctor
         void start();
         void addOrder(Order* order);
         void addAction(BaseAction* action);
@@ -27,17 +29,19 @@ class WareHouse {
         int getNewcustomerID();
         int getNewvolunteerID();
         int getNewOrderId();
-        void Initiatefile();
+        void Initiatefile(string file);
         vector<Order*>& getPendingOrders();
         vector<Order*>& getInProcessOrders();
         vector<Order*>& getCompletedOrders();
         vector<Customer*>& getCustomers();
         vector<Volunteer*>& getVolunteers();
-        
         int getOrderCounter();
-        void operator=(const WareHouse& other);
-        /* constractor, copy assigment, copy constarctor, distraptor, move constarctor, move assigment
-        */
+
+        //move assigment
+        ~WareHouse(); //distraptor
+        void operator=(const WareHouse& other); //copy assigment
+        WareHouse& operator=(WareHouse&& other) noexcept; //move assigment
+              
 
         
         private:
@@ -51,9 +55,8 @@ class WareHouse {
         int customerCounter; //For assigning unique customer IDs
         int volunteerCounter; //For assigning unique volunteer IDs
         int orderCounter;
-        const string& file;
-        Volunteer* fake_volunteer;
-        Customer* fake_Customer;
+        CollectorVolunteer* fake_volunteer;
+        CivilianCustomer* fake_Customer;
         Order* fake_Order;
 
 };
