@@ -98,12 +98,99 @@ void WareHouse::Initiatefile(string file){
     MyReadFile.close();
 }
 
+//simulateStep, order, customer, orderStatus, customerStatus, ,volunteerStatus, log, close, backup, restore
 void WareHouse::start(){
     open();
     cout << "Warehouse is open!" << endl;
+    cout << "Choose an action:\n" 
+         << "step:   |step <number_of_steps>|\n"
+         << "Adders: |order <customer_id> | customer <customer_name> <customer_type> <customer_distance> <max_orders> |\n" 
+         << "Prints: |orderStatus <order_id>| customerStatus <customer_id>| volunteerStatus <volunteer_id>|\n"
+         << "Other:  |log | close | backup | restore |" << endl;
+    string act, word;
+    vector<string> words;
     while(isOpen){
+        words.clear();     
+        cin >> act;
+        istringstream iss(act);
+        iss >> word;
+        //Parsing
         
+        if(word=="step"){                   //SimulateStep
+            iss >> word;
+            if(isdigit(word[0])) {
+                SimulateStep step(stoi(word));
+                step.act(*this);
+                addAction(&step);
 
+            }
+        }
+        else if(word=="order"){            //AddOrder
+            iss >> word;
+            if(isdigit(word[0])){
+                AddOrder newOrder(stoi(word));
+                newOrder.act(*this);
+                addAction(&newOrder);
+            }
+        }
+        else if(word=="customer"){         //AddCustomer
+            string name, type;
+            int distance, maxOrders;
+            iss >> name;
+            iss >> type;
+            iss >> distance;
+            iss >> maxOrders;
+            AddCustomer addcus(name,type,distance,maxOrders);
+            addcus.act(*this);
+            addAction(&addcus);
+        }
+        
+        else if(word=="orderStatus"){      //Print order Status 
+            iss >> word;
+            if(isdigit(word[0])) {
+                PrintOrderStatus pos(stoi(word));
+                pos.act(*this);
+                addAction(&pos);
+            }
+        }
+        else if(word=="customerStatus"){   //Print customer Status 
+            iss >> word;
+            if(isdigit(word[0])) {
+                PrintCustomerStatus pcs(stoi(word));
+                pcs.act(*this);
+                addAction(&pcs);
+            }
+        }
+        else if(word=="volunteerStatus"){  //Print volunteer Status 
+            iss >> word;
+            if(isdigit(word[0])) {
+                PrintVolunteerStatus pvs(stoi(word));
+                pvs.act(*this);
+                addAction(&pvs);
+            }
+        }
+        else if(word=="log"){             //Print Action log
+            iss >> word;
+            if(isdigit(word[0])) {
+                PrintActionsLog pal(stoi(word));
+                pal.act(*this);
+                addAction(&pal);
+            }
+        }
+        else if(word=="close"){           //Close
+                Close c();
+                c.act();
+        }
+        else if(word=="backup"){          //Backup the warehouse
+            BackupWareHouse backup();
+            backup.act(this);
+            addAction(back);
+        }
+        else if(word=="restore"){         //Restore the warehouse
+            RestoreWareHouse restore();
+            restore.act(this);
+            addAction(restore);
+        }
     }
 }
 
@@ -150,7 +237,11 @@ const vector<BaseAction*>& WareHouse::getActions() const {
 // Changes isOpen status and exit the loop and finishes the program(free all memory as well)
 void WareHouse::close() {
     isOpen=false;
-    delete this;
+}
+
+void WareHouse::open(){
+    isOpen=true;
+
 }
 
 int WareHouse::getNewcustomerID() {
@@ -191,6 +282,37 @@ int WareHouse::getOrderCounter(){
     return orderCounter;
 }
 
+void WareHouse::deleteVolunteer(Volunteer* vol, int i){
+    volunteers.erase(volunteers.begin()+i);
+    delete(vol);
+}
+
+void WareHouse::popOrder(int i, OrderVector&& vec){
+    switch (vec)
+    {
+    case OrderVector::Pending:
+        pendingOrders.erase(pendingOrders.begin()+i);
+        break;
+    case OrderVector::In_Process:
+        inProcessOrders.erase(inProcessOrders.begin()+i);
+        break;
+    case OrderVector::Completed:
+        completedOrders.erase(completedOrders.begin()+i);
+        break;
+    default:
+        break;
+    }
+}
+
+void WareHouse::removeOrderByValue(vector<Order*>& vec, Order& value) {
+    vector<Order*>::iterator position = vec.begin();
+    while(position != vec.end()) {
+        if((*position)->getId() == value.getId()) {
+            vec.erase(position);
+            break;
+        }
+    }
+}
 
 // Copy assingment
 void WareHouse::operator=(const WareHouse &other){

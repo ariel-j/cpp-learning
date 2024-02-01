@@ -57,15 +57,18 @@ void SimulateStep::act(WareHouse &wareHouse) {
         vector<Order*> &completed_Orders = wareHouse.getCompletedOrders();
         for(Order* order:pending_orders) {
             if(order->getStatus() == OrderStatus::PENDING) {
-                for(Volunteer* v:vec){
-                    if (typeid(v) == typeid(CollectorVolunteer) || typeid(v) == typeid(LimitedCollectorVolunteer)) {
-                        //checks if the vulnteer is free to accepet the order and sets the order and vulnteeer idws
-                        if(v->canTakeOrder(*order)) { 
-                            order->setCollectorId(v->getActiveOrderId());
-                            v->acceptOrder(*order);
+                for(Volunteer* vol:vec){
+                    if (typeid(vol) == typeid(CollectorVolunteer) || typeid(vol) == typeid(LimitedCollectorVolunteer)) {
+                        //checks if the volunteer is free to accepet the order and sets the order and volunteeer idws
+                        if(vol->canTakeOrder(*order)) {
+                            // Set the order
+                            order->setCollectorId(vol->getId());
                             order->setStatus(OrderStatus::COLLECTING);
-                        in_Pro_ord.push_back(order); // pushs the order to the in_process
-                            pending_orders.erase(pending_orders.begin()+j); //pops the order from the pending
+                            // Set the collector
+                            vol->acceptOrder(*order);
+
+                            in_Pro_ord.push_back(order); // pushs the order to the in_process
+                            wareHouse.popOrder(j, OrderVector::Pending);
                             break;
                         }
                     }  
@@ -82,7 +85,7 @@ void SimulateStep::act(WareHouse &wareHouse) {
                         order->setStatus(OrderStatus::DELIVERING);
                         // Update the order vector
                         in_Pro_ord.push_back(order);
-                        pending_orders.erase(pending_orders.begin()+i);
+                        wareHouse.popOrder(i,OrderVector::Pending);
                         break;
                     }
                 }
@@ -91,8 +94,8 @@ void SimulateStep::act(WareHouse &wareHouse) {
         }
 
         // Step 2, 3, 4:
-        
-        for(int i = 0; i < vec.size(); i++){      
+        int size = vec.size();
+        for(int i = 0; i < size; i++){      
             int oId = vec[i]->getActiveOrderId(); 
             vec[i]->step(); // Step 2
             if(oId == vec[i]->getCompletedOrderId()) {                                    // step 3: Check if volunteer finished the order 
@@ -103,28 +106,17 @@ void SimulateStep::act(WareHouse &wareHouse) {
                     completed_Orders.push_back(&o);
                     o.setStatus(OrderStatus::COMPLETED);
                 }
-                removeByValueOrder(in_Pro_ord,o);                                          // erase the order from in proccess orders vector
+                wareHouse.removeOrderByValue(in_Pro_ord,o);                                          // erase the order from in proccess orders vector
                 
-                if(!vec[i]->hasOrdersLeft()) { vec.erase(vec.begin()+i);}                  // step 4: remove any limited volunteer that reahces his maximum               
+                if(!vec[i]->hasOrdersLeft()) {wareHouse.deleteVolunteer(vec[i], i); size--;}                  // step 4: remove any limited volunteer that reahces his maximum               
             }           
         }
     }   
-wareHouse.addAction(this);
 }
 
 std::string SimulateStep::toString() const {return "step";}
 
 SimulateStep* SimulateStep::clone() const {return new SimulateStep(*this);}
-
-//
-void removeByValueOrder(vector<Order*>& vec, Order& value){
-    vector<Order*>::iterator position = vec.begin();
-    while(position != vec.end()) {
-        if((*position)->getId() == value.getId()) {
-            vec.erase(position);
-        }
-    }
-}
 
 //addorder
 AddOrder::AddOrder(int id) : customerId(id) {}
@@ -133,11 +125,9 @@ void AddOrder::act(WareHouse &wareHouse) {
     Customer* customer = &(wareHouse.getCustomer(customerId));
     if(customer->getId() != -1 && customer->canMakeOrder()) {
         wareHouse.addOrder(new Order(wareHouse.getNewOrderId(),customerId, customer->getCustomerDistance()));
-        wareHouse.addAction(this);
-
     }
     else {
-         error("Cannot place this order");
+        error("Cannot place this order");
         cout << getErrorMsg() << endl;
     }
 }
@@ -159,7 +149,6 @@ void AddCustomer::act(WareHouse &wareHouse) {
         customer = new CivilianCustomer(wareHouse.getNewcustomerID(), customerName, distance, maxOrders);
     }
     wareHouse.addCustomer(customer);
-    wareHouse.addAction(this);
 }
 string AddCustomer::customerToString() const{
     string strCustomer;
@@ -211,7 +200,6 @@ void PrintCustomerStatus::act(WareHouse &wareHouse) {
             cout << "OrderStatus:"+ wareHouse.getOrder(O).switchStatusToString() << endl;
         }
         cout << "numOrdersLeft:" +to_string(customer->getMaxOrders()-customer->getNumOrders()) <<endl;
-        wareHouse.addAction(this);
     }
     else {
         error("customer doesn't exist");
@@ -230,10 +218,9 @@ void PrintVolunteerStatus::act(WareHouse &wareHouse) {
     Volunteer* volunteer = &wareHouse.getVolunteer(volunteerId);
     if(volunteer->getId() != -1) {
         cout << volunteer->toString() << endl;
-        wareHouse.addAction(this);
     }
     else {
-         error("Volunteer doesn’t exist");
+        error("Volunteer doesn’t exist");
         cout << getErrorMsg() << endl;
     }
 }
@@ -250,7 +237,6 @@ void PrintActionsLog::act(WareHouse &wareHouse) {
      for (BaseAction* A : wareHouse.getActions()) {
         cout << (*A).toString() << endl;
     }
-    wareHouse.addAction(this); 
     }
 
 PrintActionsLog* PrintActionsLog::clone() const {return new PrintActionsLog(*this);}

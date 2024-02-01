@@ -18,6 +18,10 @@ enum class CustomerType{
     Soldier, Civilian
 };
 
+enum class OrderVector{
+    Pending, In_Process, Completed
+};
+
 
 class BaseAction{
     public:

@@ -36,7 +36,9 @@ class WareHouse {
         vector<Customer*>& getCustomers();
         vector<Volunteer*>& getVolunteers();
         int getOrderCounter();
-
+        void deleteVolunteer(Volunteer* vol, int i);            // 'i' - the 'place' in volunteer's vetor where 'vol' is
+        void popOrder(int i, OrderVector&& vec);// 'i' - same^, 'vec' - the vector of the order(pending,inprocess,completed), the method removes the order from the vector.
+        void removeOrderByValue(vector<Order*>& vec, Order& value);
         //move assigment
         ~WareHouse(); //distraptor
         void operator=(const WareHouse& other); //copy assigment
