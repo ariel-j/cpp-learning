@@ -1,12 +1,11 @@
 #include <string>
 #include <vector>
-#include "../include/Order.h"
 #include "../include/Volunteer.h"
 using namespace std;
 
 //Volunteer class
 Volunteer::Volunteer(int id, const string &name)
-    : id(id),name(name), completedOrderId(NO_ORDER), activeOrderId(NO_ORDER){}
+    : completedOrderId(NO_ORDER), activeOrderId(NO_ORDER), id(id),name(name){}
 
 int Volunteer::getId() const {
     return id;
@@ -120,7 +119,7 @@ string LimitedCollectorVolunteer::toString() const {
            "\nisBusy: " + (isBusy()?"true":"false") +
            "\nOrderId: " + ((activeOrderId == -1) ? "None" : to_string(activeOrderId)) +
            "\ntimeLeft: " + to_string(getTimeLeft()) + 
-           "\nordersLeft: No Limit";
+           "\nordersLeft: " + to_string(maxOrders);
 }
 //DriverVolunteer 
 DriverVolunteer::DriverVolunteer(int id, const string &name, int maxDistance, int distancePerStep): 

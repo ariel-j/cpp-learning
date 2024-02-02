@@ -2,8 +2,6 @@
 #include <string>
 #include <vector>
 #include "Order.h"
-using std::string;
-using std::vector;
 using namespace std;
 
 

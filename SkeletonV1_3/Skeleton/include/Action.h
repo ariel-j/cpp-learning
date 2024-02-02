@@ -1,12 +1,10 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "WareHouse.h"
 #include "Volunteer.h"
 #include "Customer.h"
 #include "Order.h"
-using std::string;
-using std::vector;
+#include "WareHouse.h"
 using namespace std;
 
 
@@ -18,10 +16,6 @@ enum class CustomerType{
     Soldier, Civilian
 };
 
-enum class OrderVector{
-    Pending, In_Process, Completed
-};
-
 
 class BaseAction{
     public:
@@ -30,6 +24,7 @@ class BaseAction{
         virtual void act(WareHouse& wareHouse)=0;
         virtual string toString() const=0;
         virtual BaseAction* clone() const=0;
+        virtual ~BaseAction();
 
     protected:
         void complete();

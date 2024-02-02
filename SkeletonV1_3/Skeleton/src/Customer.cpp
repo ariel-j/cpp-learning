@@ -1,12 +1,11 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include "../include/Order.h"
 #include "../include/Customer.h"
 using namespace std;
 
 Customer::Customer(int id, const string &name, int locationDistance, int maxOrders)
-    : id(id), name(name), locationDistance(locationDistance), maxOrders(maxOrders) {
+    : id(id), name(name), locationDistance(locationDistance), maxOrders(maxOrders), ordersId(vector<int>()){
 }
 
 const string& Customer::getName() const{

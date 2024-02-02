@@ -45,5 +45,14 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp"
+    },
+
+    "makefile.makePath": "/home/arieljay/Assignment1/SkeletonV1_3/Skeleton/Makefile",
+    "makefile.launchConfigurations": [{
+        "cwd" : "/src",
+        "binaryPath" : "/bin/main",
+        "binaryArgs": []
     }
+],
+"makefile.makefilePath": "/home/arieljay/Assignment1/SkeletonV1_3/Skeleton/Makefile"
 }

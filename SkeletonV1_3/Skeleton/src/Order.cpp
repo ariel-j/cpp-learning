@@ -1,8 +1,8 @@
 #include <string>
 #include <vector>
+#include <iostream>
 #include "../include/Order.h"
 using namespace std;
-#include <iostream>
 
 Order::Order(int id, int customerId, int distance)
     : id(id), customerId(customerId), distance(distance), status(OrderStatus::PENDING), collectorId(NO_VOLUNTEER), driverId(NO_VOLUNTEER) {
@@ -77,7 +77,7 @@ const string Order::toString() const{
     //Collector Id
     ans = (getCollectorId() == -1) ? ans + "\nCollector ID: " + "None" : ans + ",\nCollector ID: " + to_string(collectorId);
     // Driver Id
-    ans = (getDriverId() == -1) ? ans + "\nDriver ID: " + "None" : "\nDriver ID: " + to_string(driverId);
+    ans = (getDriverId() == -1) ? ans + "\nDriver ID: " + "None" : ans + "\nDriver ID: " + to_string(driverId);
     
     return ans;
 }

@@ -1,19 +1,24 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <algorithm>
 #include "../include/WareHouse.h"
 #include "../include/Action.h"
 using namespace std;
-#include <sstream>
 
 WareHouse::WareHouse(const string &configFilePath)
-:  isOpen(false), customerCounter(-1), volunteerCounter(-1),orderCounter(-1), 
-fake_Customer(new CivilianCustomer(-1,"-1",-1,-1)), fake_Order(new Order(-1,-1,-1)), fake_volunteer(new CollectorVolunteer(-1,"-1",-1))
+:  isOpen(false),actionsLog(vector<BaseAction*>()),volunteers(vector<Volunteer*>()),pendingOrders(vector<Order*>()), 
+inProcessOrders(vector<Order*>()),completedOrders(vector<Order*>()),
+customers(vector<Customer*>()), customerCounter(-1), volunteerCounter(-1),orderCounter(-1), fake_volunteer(new CollectorVolunteer(-1,"-1",-1)),  
+fake_Customer(new CivilianCustomer(-1,"-1",-1,-1)), fake_Order(new Order(-1,-1,-1))
 {Initiatefile(configFilePath);}
 
 //copy constarctor
 WareHouse::WareHouse(const WareHouse& other)
-: isOpen(other.isOpen), customerCounter(other.customerCounter), volunteerCounter(other.volunteerCounter), orderCounter(other.orderCounter),
-fake_Customer(other.fake_Customer->clone()), fake_Order(other.fake_Order->clone()), fake_volunteer(other.fake_volunteer->clone()) {
+: isOpen(other.isOpen),actionsLog(vector<BaseAction*>()),volunteers(vector<Volunteer*>()),pendingOrders(vector<Order*>()), 
+inProcessOrders(vector<Order*>()),completedOrders(vector<Order*>()),
+customers(vector<Customer*>()), customerCounter(other.customerCounter), volunteerCounter(other.volunteerCounter), orderCounter(other.orderCounter),
+fake_volunteer(other.fake_volunteer->clone()), fake_Customer(other.fake_Customer->clone()), fake_Order(other.fake_Order->clone()) {
     // Copy action log
     for(BaseAction* act: other.actionsLog) {
         actionsLog.push_back(act->clone());
@@ -41,9 +46,9 @@ fake_Customer(other.fake_Customer->clone()), fake_Order(other.fake_Order->clone(
 }
  //move constarctor
 WareHouse::WareHouse(const WareHouse&& other) noexcept : 
-isOpen(other.isOpen), customerCounter(other.customerCounter), volunteerCounter(other.volunteerCounter), orderCounter(other.orderCounter),
-fake_Customer(other.fake_Customer), fake_Order(other.fake_Order), fake_volunteer(other.fake_volunteer),actionsLog (other.actionsLog),volunteers(other.volunteers),
-pendingOrders(other.pendingOrders), inProcessOrders(other.inProcessOrders), completedOrders(other.completedOrders), customers(other.customers) {
+isOpen(other.isOpen),actionsLog(other.actionsLog),volunteers(other.volunteers),
+pendingOrders(other.pendingOrders), inProcessOrders(other.inProcessOrders), completedOrders(other.completedOrders), customers(other.customers), customerCounter(other.customerCounter), volunteerCounter(other.volunteerCounter), orderCounter(other.orderCounter),
+fake_volunteer(other.fake_volunteer), fake_Customer(other.fake_Customer), fake_Order(other.fake_Order) {
     actionsLog.clear();
     volunteers.clear();
     pendingOrders.clear();
@@ -61,6 +66,7 @@ void WareHouse::Initiatefile(string file){
     string word;
     ifstream MyReadFile(file);
     while (getline (MyReadFile, line)) {
+        //if (line.empty()) {continue;}
         words.clear();     
         istringstream iss(line);
         iss >> word;
@@ -84,38 +90,36 @@ void WareHouse::Initiatefile(string file){
             if (words[1] == "collector") {
                 volunteers.push_back(new CollectorVolunteer(getNewvolunteerID(), words[0],stoi(words[2])));
                 }
-            else if(words[1] == "LimitedCollectorVolunteer") {
+            else if(words[1] == "limited_collector") {
                 volunteers.push_back(new LimitedCollectorVolunteer(getNewvolunteerID(), words[0], stoi(words[2]),stoi(words[3])));
             }
             else if (words[1] == "driver") {
                 volunteers.push_back(new DriverVolunteer(getNewvolunteerID(), words[0],stoi(words[2]),stoi(words[3])));
             }
-             else if(words[1] == "LimitedDriverVolunteer") {
+             else if(words[1] == "limited_driver") {
                 volunteers.push_back(new LimitedDriverVolunteer(getNewvolunteerID(), words[0], stoi(words[2]),stoi(words[3]), stoi(words[4])));
             }     
         }
     }
     MyReadFile.close();
+
 }
 
-//simulateStep, order, customer, orderStatus, customerStatus, ,volunteerStatus, log, close, backup, restore
+// Id excpected to be >= 0
 void WareHouse::start(){
     open();
     cout << "Warehouse is open!" << endl;
-    cout << "Choose an action:\n" 
+    string act, word;
+    while(isOpen){
+        cout << "Choose an action:\n" 
          << "step:   |step <number_of_steps>|\n"
          << "Adders: |order <customer_id> | customer <customer_name> <customer_type> <customer_distance> <max_orders> |\n" 
          << "Prints: |orderStatus <order_id>| customerStatus <customer_id>| volunteerStatus <volunteer_id>|\n"
          << "Other:  |log | close | backup | restore |" << endl;
-    string act, word;
-    vector<string> words;
-    while(isOpen){
-        words.clear();     
-        cin >> act;
+        getline (cin,act);
         istringstream iss(act);
         iss >> word;
         //Parsing
-        
         if(word=="step"){                   //SimulateStep
             iss >> word;
             if(isdigit(word[0])) {
@@ -132,6 +136,12 @@ void WareHouse::start(){
                 newOrder.act(*this);
                 addAction(&newOrder);
             }
+            // If the first char after 'order' was not a number - syntax error
+            /*else {
+                AddOrder newOrder(-1);
+                newOrder.act(*this);
+                addAction(&newOrder);
+            }*/
         }
         else if(word=="customer"){         //AddCustomer
             string name, type;
@@ -153,7 +163,7 @@ void WareHouse::start(){
                 addAction(&pos);
             }
         }
-        else if(word=="customerStatus"){   //Print customer Status 
+        else if(word=="customerStatus"){   //Print customer Status - Checked exept from log
             iss >> word;
             if(isdigit(word[0])) {
                 PrintCustomerStatus pcs(stoi(word));
@@ -161,7 +171,7 @@ void WareHouse::start(){
                 addAction(&pcs);
             }
         }
-        else if(word=="volunteerStatus"){  //Print volunteer Status 
+        else if(word=="volunteerStatus"){  //Print volunteer Status - Checked exept from log
             iss >> word;
             if(isdigit(word[0])) {
                 PrintVolunteerStatus pvs(stoi(word));
@@ -171,26 +181,25 @@ void WareHouse::start(){
         }
         else if(word=="log"){             //Print Action log
             iss >> word;
-            if(isdigit(word[0])) {
-                PrintActionsLog pal(stoi(word));
-                pal.act(*this);
-                addAction(&pal);
-            }
+            PrintActionsLog pal;
+            pal.act(*this);
+            addAction(&pal);
         }
         else if(word=="close"){           //Close
-                Close c();
-                c.act();
+                Close c;
+                c.act(*this);
         }
         else if(word=="backup"){          //Backup the warehouse
-            BackupWareHouse backup();
-            backup.act(this);
-            addAction(back);
+            BackupWareHouse backup;
+            backup.act(*this);
+            addAction(&backup);
         }
         else if(word=="restore"){         //Restore the warehouse
-            RestoreWareHouse restore();
-            restore.act(this);
-            addAction(restore);
+            RestoreWareHouse restore;
+            restore.act(*this);
+            addAction(&restore);
         }
+        else{cout << "Unknown action" << endl;}
     }
 }
 
@@ -287,21 +296,8 @@ void WareHouse::deleteVolunteer(Volunteer* vol, int i){
     delete(vol);
 }
 
-void WareHouse::popOrder(int i, OrderVector&& vec){
-    switch (vec)
-    {
-    case OrderVector::Pending:
-        pendingOrders.erase(pendingOrders.begin()+i);
-        break;
-    case OrderVector::In_Process:
-        inProcessOrders.erase(inProcessOrders.begin()+i);
-        break;
-    case OrderVector::Completed:
-        completedOrders.erase(completedOrders.begin()+i);
-        break;
-    default:
-        break;
-    }
+void WareHouse::popOrder(int i, vector<Order*>& vec) {
+    vec.erase(vec.begin()+i);
 }
 
 void WareHouse::removeOrderByValue(vector<Order*>& vec, Order& value) {
@@ -315,7 +311,7 @@ void WareHouse::removeOrderByValue(vector<Order*>& vec, Order& value) {
 }
 
 // Copy assingment
-void WareHouse::operator=(const WareHouse &other){
+WareHouse& WareHouse::operator=(const WareHouse &other){
     if(&other != this) {
         isOpen = other.isOpen;
         customerCounter = other.customerCounter;
@@ -325,7 +321,7 @@ void WareHouse::operator=(const WareHouse &other){
         fake_Customer = other.fake_Customer->clone();
         fake_Order = other.fake_Order->clone();
         // Clear action log
-        for(BaseAction* a:actionsLog){delete(a);}
+        for(BaseAction* a:actionsLog){delete(a);} 
         actionsLog.clear();
         // Copy action log
         for(BaseAction* act: other.actionsLog) {
@@ -360,11 +356,9 @@ void WareHouse::operator=(const WareHouse &other){
         customers.clear();
         for(Customer* customer: other.customers) {
             customers.push_back(customer->clone());
-        }
-        
-       
+        }      
     }
-
+return *this;
 }
 //move assigment
 WareHouse& WareHouse::operator=(WareHouse&& other) noexcept {
@@ -417,6 +411,7 @@ WareHouse& WareHouse::operator=(WareHouse&& other) noexcept {
         customers = other.customers;// Assingment
         other.customers.clear(); //nullptr the other            
     }
+    return *this;
 } 
 
 WareHouse::~WareHouse() {
@@ -437,15 +432,13 @@ WareHouse::~WareHouse() {
 
     for(BaseAction* a:actionsLog){
         if(a != nullptr) {delete(a);}} 
-    // Default delete     
-    delete(this);   
 }
 
-int main(int argc, char** argv) {
+/*int main(int argc, char** argv) {
     cout << "Entering main:" << endl;
     string configurationFile = argv[1];
     cout << configurationFile << endl;
     WareHouse wareHouse(configurationFile);
     wareHouse.start();
     return 0;
-}
+}*/

@@ -3,6 +3,7 @@
 #include <vector>
 #include "Order.h"
 #include "Customer.h"
+#include "Volunteer.h"
 
 class BaseAction;           
 class Volunteer;
@@ -37,11 +38,11 @@ class WareHouse {
         vector<Volunteer*>& getVolunteers();
         int getOrderCounter();
         void deleteVolunteer(Volunteer* vol, int i);            // 'i' - the 'place' in volunteer's vetor where 'vol' is
-        void popOrder(int i, OrderVector&& vec);// 'i' - same^, 'vec' - the vector of the order(pending,inprocess,completed), the method removes the order from the vector.
+        void popOrder(int i, vector<Order*>& vec);// 'i' - same^, 'vec' - the vector of the order(pending,inprocess,completed), the method removes the order from the vector.
         void removeOrderByValue(vector<Order*>& vec, Order& value);
         //move assigment
         ~WareHouse(); //distraptor
-        void operator=(const WareHouse& other); //copy assigment
+        WareHouse& operator=(const WareHouse& other); //copy assigment
         WareHouse& operator=(WareHouse&& other) noexcept; //move assigment
               
 
