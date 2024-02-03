@@ -112,8 +112,7 @@ void SimulateStep::act(WareHouse &wareHouse) {
                     }
                 }
             }
-            j++;
-            if(!didPop) {iterOrder++;}
+            if(!didPop) {iterOrder++; j++;}
         }
         cout << "end stage 1" <<endl;
 
